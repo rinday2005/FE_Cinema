@@ -49,7 +49,7 @@ const Payment = () => {
   };
 
   // 🧾 Hàm gửi xác nhận thanh toán đến backend
-  const confirmBooking = async (method = paymentMethod) => {
+  const confirmBooking = async (method = paymentMethod, skipNavigate = false) => {
     if (!bookingData) return;
     setLoading(true);
 
@@ -100,9 +100,14 @@ const Payment = () => {
         paymentMethod: method,
       };
       sessionStorage.setItem("paymentData", JSON.stringify(paymentData));
+      
+      // XÓA bookingData sau khi thanh toán thành công
+      sessionStorage.removeItem("bookingData");
 
       toast.success("Thanh toán thành công!");
-      navigate("/confirm-ticket");
+      if (!skipNavigate) {
+        navigate("/confirm-ticket");
+      }
     } catch (err) {
       console.error("Payment error:", err);
       toast.error("Thanh toán thất bại, vui lòng thử lại");
@@ -120,9 +125,21 @@ const Payment = () => {
     }
   };
 
-  // ✅ Người dùng xác nhận đã thanh toán MoMo thành công
+  // ✅ Người dùng xác nhận đã thanh toán MoMo thành công (điều hướng lạc quan)
   const handleMoMoPaymentSuccess = async () => {
-    await confirmBooking("momo");
+    if (!bookingData) return;
+    // Điều hướng ngay tới trang xác nhận với dữ liệu tạm thời
+    const tempPaymentData = {
+      ...bookingData,
+      transactionId: `TXN_${Date.now()}`,
+      paymentMethod: "momo",
+    };
+    sessionStorage.setItem("paymentData", JSON.stringify(tempPaymentData));
+    sessionStorage.removeItem("bookingData");
+    navigate("/confirm-ticket");
+
+    // Gửi xác nhận thật lên server ở nền, không chặn UI
+    confirmBooking("momo", true).catch(() => {});
     setShowQRCode(false);
   };
 

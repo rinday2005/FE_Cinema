@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
 
 const ConfirmTicket = () => {
   const [ticketData, setTicketData] = useState(null);
   const ticketRef = useRef(null);
+  const navigate = useNavigate();
 
   // 🔹 Lấy dữ liệu thanh toán từ sessionStorage
   useEffect(() => {
@@ -53,6 +55,30 @@ const ConfirmTicket = () => {
     sessionStorage.removeItem("bookingData");
     sessionStorage.removeItem("paymentData");
     window.location.href = "/";
+  };
+
+  // 🔹 Quay lại trang thanh toán
+  const handleBackToPayment = () => {
+    if (!ticketData) return;
+    // Phục hồi bookingData từ paymentData để Payment.jsx sử dụng lại
+    const bookingData = {
+      lockId: ticketData.lockId,
+      movieTitle: ticketData.movieTitle,
+      moviePoster: ticketData.moviePoster,
+      systemName: ticketData.systemName,
+      clusterName: ticketData.clusterName,
+      hallName: ticketData.hallName,
+      date: ticketData.date,
+      startTime: ticketData.startTime,
+      endTime: ticketData.endTime,
+      selectedSeats: ticketData.selectedSeats,
+      selectedCombos: ticketData.selectedCombos || [],
+      total: ticketData.total,
+      cinemaId: ticketData.cinemaId,
+      systemId: ticketData.systemId,
+    };
+    sessionStorage.setItem("bookingData", JSON.stringify(bookingData));
+    navigate("/payment");
   };
 
   // 🔹 Loading state
@@ -241,6 +267,12 @@ const ConfirmTicket = () => {
                     gradient="from-blue-500 to-cyan-500"
                     icon="⬇️"
                     onClick={handleDownloadTicket}
+                  />
+                  <ActionButton
+                    label="Quay lại thanh toán"
+                    gradient="from-slate-500 to-gray-600"
+                    icon="↩️"
+                    onClick={handleBackToPayment}
                   />
                   <ActionButton
                     label="Về trang chủ"

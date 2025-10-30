@@ -119,11 +119,18 @@ const Booking = () => {
         );
         const lockedSeats = lockRes.data?.lockedSeats || [];
 
-        // 4️⃣ Merge trạng thái: occupied > locked > available
+        // 4️⃣ Merge trạng thái: sold > occupied > locked > available
         const mergedSeats = baseSeats.map((s) => {
+          // Nếu ghế đã sold hoặc reserved, giữ nguyên status
+          if (s.status === "sold" || s.status === "reserved") {
+            return { ...s, status: s.status };
+          }
+          
+          // Kiểm tra ghế có bị lock không
           const isLocked = lockedSeats.some(
             (ls) => ls.seatNumber === s.seatNumber
           );
+          
           if (s.status === "occupied") return { ...s, status: "occupied" };
           if (isLocked) return { ...s, status: "locked" };
           return { ...s, status: "available" };
@@ -193,6 +200,12 @@ const Booking = () => {
   // ----------------- TOGGLE SEAT -----------------
   const toggleSeat = (seat) => {
     if (!seat) return;
+    
+    // Kiểm tra các trạng thái không cho phép chọn
+    if (seat.status === "sold") {
+      toast.error("Ghế đã được bán");
+      return;
+    }
     if (seat.status === "reserved" || seat.status === "occupied") {
       toast.error("Ghế đã được đặt");
       return;
@@ -373,6 +386,7 @@ const Booking = () => {
                       (s) => s.seatNumber === seat.seatNumber
                     );
                     const isReserved =
+                      seat.status === "sold" ||
                       seat.status === "reserved" ||
                       seat.status === "occupied" ||
                       seat.status === "locked";
@@ -445,6 +459,7 @@ const Booking = () => {
                       (s) => s.seatNumber === seat.seatNumber
                     );
                     const isReserved =
+                      seat.status === "sold" ||
                       seat.status === "reserved" ||
                       seat.status === "occupied" ||
                       seat.status === "locked";
@@ -469,6 +484,7 @@ const Booking = () => {
                         title={`${
                           seat.seatNumber
                         } - ${seat.type.toUpperCase()} - ${seat.price.toLocaleString()}₫${
+                          seat.status === "sold" ? " (Đã bán)" : 
                           seat.status === "locked" ? " (Đang được giữ)" : ""
                         }`}
                       >
@@ -519,6 +535,7 @@ const Booking = () => {
                       (s) => s.seatNumber === seat.seatNumber
                     );
                     const isReserved =
+                      seat.status === "sold" ||
                       seat.status === "reserved" ||
                       seat.status === "occupied" ||
                       seat.status === "locked";

@@ -238,6 +238,7 @@ const Home = () => {
               {user &&
                 (user.role === "admin" || user.role === "superadmin") && (
                   <button
+                    type="button"
                     onClick={() => navigate("/admin")}
                     className="px-6 py-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl text-white hover:from-orange-600 hover:to-red-600 transition-all duration-300 hover:scale-105 flex items-center gap-2"
                   >
